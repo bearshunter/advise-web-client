@@ -9,7 +9,7 @@ public class HttpClient {
 
     public String getRequester(){
         Client client = ClientBuilder.newClient();
-        WebTarget target = client.target("http://localhost:8080").path("advisenet-1.0/user/ping");
+        WebTarget target = client.target("http://localhost:8080").path("server/user/ping");
         return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON).get(String.class);
     }
 
