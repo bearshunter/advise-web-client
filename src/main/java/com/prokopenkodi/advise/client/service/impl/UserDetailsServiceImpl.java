@@ -1,6 +1,10 @@
-package com.prokopenkodi.advise.client.service;
+package com.prokopenkodi.advise.client.service.impl;
 
-import com.prokopenkodi.advise.client.rest.dto.User;
+import com.prokopenkodi.advise.client.classes.AdviseWebException;
+import com.prokopenkodi.advise.client.classes.SecurityRole;
+import com.prokopenkodi.advise.client.pojo.AuthUser;
+import com.prokopenkodi.advise.client.pojo.User;
+import com.prokopenkodi.advise.client.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,20 +23,17 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // с помощью нашего сервиса UserService получаем User
-        User user = userService.getUser("colibri");
-        // указываем роли для этого пользователя
+        User user;
+        try {
+            user = userService.getUserByEmail(email);
+        } catch (AdviseWebException e) {
+            throw new UsernameNotFoundException(email);
+        }
         Set<GrantedAuthority> roles = new HashSet<>();
-        roles.add(new SimpleGrantedAuthority(UserRole.USER.name()));
-
-        // на основании полученныйх даных формируем объект UserDetails
-        // который позволит проверить введеный пользователем логин и пароль
-        // и уже потом аутентифицировать пользователя
-        UserDetails userDetails =
-                new org.springframework.security.core.userdetails.User(user.getLogin(),
-                        user.getPassword(),
-                        roles);
-
-        return userDetails;
+        roles.add(new SimpleGrantedAuthority(SecurityRole.ROLE_USER.name()));
+        AuthUser result = new AuthUser(email, user.getPassword(), roles);
+        result.setLogin(user.getLogin());
+        result.setId(user.getId());
+        return result;
     }
 }
